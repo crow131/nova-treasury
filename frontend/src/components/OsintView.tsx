@@ -9,11 +9,13 @@ import {
   Globe, 
   Eye, 
   Skull,
-  Search,
   Lock,
   Phone,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  FolderOpen,
+  User,
+  HardDrive
 } from 'lucide-react';
 
 interface IpData {
@@ -25,8 +27,23 @@ interface IpData {
   postal?: string;
 }
 
+interface CsharpOsintDetails {
+  username: string;
+  machineName: string;
+  osDescription: string;
+  osArchitecture: string;
+  processArchitecture: string;
+  frameworkDescription: string;
+  workingDirectory: string;
+  processId: number;
+  processName: string;
+  processUptime: string;
+  localIps: string[];
+}
+
 export default function OsintView() {
   const [ipData, setIpData] = useState<IpData | null>(null);
+  const [csharpDetails, setCsharpDetails] = useState<CsharpOsintDetails | null>(null);
   const [systemTime, setSystemTime] = useState<string>('');
   const [webglInfo, setWebglInfo] = useState<{ vendor: string; renderer: string }>({ vendor: 'Unknown', renderer: 'Unknown' });
   const [isScanning, setIsScanning] = useState<boolean>(true);
@@ -38,6 +55,8 @@ export default function OsintView() {
     const interval = setInterval(() => {
       setSystemTime(new Date().toLocaleString());
     }, 1000);
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005';
 
     // Fetch IP and Geo Data
     fetch('https://ipapi.co/json/')
@@ -56,6 +75,17 @@ export default function OsintView() {
           org: 'Dev Machine Sandbox',
           postal: '00000'
         });
+      });
+
+    // Fetch C# Backend System Details
+    fetch(`${apiBaseUrl}/api/osint`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch backend OSINT details');
+        return res.json();
+      })
+      .then((data) => setCsharpDetails(data))
+      .catch((err) => {
+        console.error('Failed to connect to C# backend OSINT endpoint:', err);
       });
 
     // Extract WebGL Renderer details (GPU Fingerprint)
@@ -85,7 +115,7 @@ export default function OsintView() {
         }
         return prev + 10;
       });
-    }, 200);
+    }, 150);
 
     return () => {
       clearInterval(interval);
@@ -123,8 +153,8 @@ export default function OsintView() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-extrabold font-sans tracking-tight text-on-surface flex items-center gap-2">
-            <ShieldAlert className="w-8 h-8 text-red-600 animate-pulse" />
-            <span>OSINT Sentinel Audit</span>
+            <ShieldAlert className="w-8 h-8 text-red-650 animate-pulse" />
+            <span>Chimichanga Sentinel Scanner</span>
           </h2>
           <p className="text-on-surface-variant font-medium text-sm mt-1">
             Analyzing security exposure vectors and local system footprinting.
@@ -132,7 +162,7 @@ export default function OsintView() {
         </div>
         
         {isScanning ? (
-          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-600 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse">
+          <div className="flex items-center gap-2 bg-amber-555/10 border border-amber-500/20 text-amber-600 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse">
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             <span>Fingerprinting Host ({scanProgress}%)</span>
           </div>
@@ -154,7 +184,7 @@ export default function OsintView() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>
             
             <div className="space-y-4 z-10">
-              <div className="flex items-center justify-between border-b border-red-950 pb-3">
+              <div className="flex items-center justify-between border-b border-red-955 pb-3">
                 <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-red-500">
                   Critical Warning Message
                 </span>
@@ -180,7 +210,7 @@ export default function OsintView() {
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-t-2 border-l-2 border-slate-950 rotate-45"></div>
                 
                 <p className="mt-1">
-                  &ldquo;Didn't your mom tell you not to run code on your PC when you do not know what it does?&rdquo;
+                  &ldquo;Whoa, superstar! Didn't your mom ever teach you not to run arbitrary code on your PC when you have absolutely no clue what it actually does? (Spoiler alert: this is how supervillains are made).&rdquo;
                 </p>
               </div>
             </div>
@@ -204,14 +234,80 @@ export default function OsintView() {
           </div>
         </section>
 
-        {/* Right Side: Active Host OSINT Fingerprint & Exploits (7 Columns) */}
+        {/* Right Side: Active Host OSINT Fingerprint & C# Telemetry (7 Columns) */}
         <section className="col-span-12 lg:col-span-7 space-y-6">
           
-          {/* OSINT details card */}
+          {/* C# Server Side System Leak Card */}
+          {csharpDetails && (
+            <div className="bg-slate-950 border border-red-900/50 rounded-2xl p-6 shadow-xl space-y-4 text-slate-200">
+              <h3 className="font-extrabold text-lg text-red-500 tracking-tight flex items-center gap-2 border-b border-red-950/60 pb-3">
+                <Cpu className="w-5 h-5 text-red-500 animate-pulse" />
+                <span>Backend C# API Process OSINT (Host Leak)</span>
+              </h3>
+              
+              <p className="text-[11px] text-slate-400 leading-normal">
+                Because the <code className="text-red-400 bg-red-950/40 px-1 py-0.5 rounded font-mono">dotnet run</code> backend process runs with the current OS account privileges, it has queried and returned the following system configurations:
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                
+                <div className="space-y-1 p-3 bg-slate-900/60 border border-red-950/30 rounded-lg">
+                  <span className="text-[9px] font-bold text-red-400 uppercase block">Host Machine User</span>
+                  <span className="font-semibold text-slate-100 break-all flex items-center gap-1">
+                    <User className="w-3.5 h-3.5 text-red-500 opacity-80" />
+                    <span>{csharpDetails.username}</span>
+                  </span>
+                </div>
+
+                <div className="space-y-1 p-3 bg-slate-900/60 border border-red-950/30 rounded-lg">
+                  <span className="text-[9px] font-bold text-red-400 uppercase block">Host Node Name</span>
+                  <span className="font-semibold text-slate-100 break-all">{csharpDetails.machineName}</span>
+                </div>
+
+                <div className="space-y-1 p-3 bg-slate-900/60 border border-red-950/30 rounded-lg col-span-1 md:col-span-2">
+                  <span className="text-[9px] font-bold text-red-400 uppercase block">Host Operating System Description</span>
+                  <span className="font-semibold text-slate-100 break-all flex items-center gap-1">
+                    <HardDrive className="w-3.5 h-3.5 text-red-500 opacity-80" />
+                    <span>{csharpDetails.osDescription} ({csharpDetails.osArchitecture})</span>
+                  </span>
+                </div>
+
+                <div className="space-y-1 p-3 bg-slate-900/60 border border-red-950/30 rounded-lg">
+                  <span className="text-[9px] font-bold text-red-400 uppercase block">Process Host / Runtime</span>
+                  <span className="font-semibold text-slate-100 break-all">
+                    {csharpDetails.processName} ({csharpDetails.processId}) / .NET 10
+                  </span>
+                </div>
+
+                <div className="space-y-1 p-3 bg-slate-900/60 border border-red-950/30 rounded-lg">
+                  <span className="text-[9px] font-bold text-red-400 uppercase block">C# Process Uptime</span>
+                  <span className="font-semibold text-slate-100 break-all">{csharpDetails.processUptime}</span>
+                </div>
+
+                <div className="space-y-1 p-3 bg-slate-900/60 border border-red-950/30 rounded-lg col-span-1 md:col-span-2">
+                  <span className="text-[9px] font-bold text-red-400 uppercase block">Project Working Directory (Host Filepath)</span>
+                  <span className="font-semibold text-slate-100 break-all flex items-center gap-1 text-[11px] leading-relaxed">
+                    <FolderOpen className="w-4 h-4 text-red-500 opacity-80 shrink-0" />
+                    <span>{csharpDetails.workingDirectory}</span>
+                  </span>
+                </div>
+
+                <div className="space-y-1 p-3 bg-slate-900/60 border border-red-950/30 rounded-lg col-span-1 md:col-span-2">
+                  <span className="text-[9px] font-bold text-red-400 uppercase block">Host Network Interface Addresses</span>
+                  <span className="font-semibold text-slate-100 break-all text-[11px]">
+                    {csharpDetails.localIps.join(', ')}
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* OSINT details card (Client Details) */}
           <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="font-extrabold text-lg text-slate-900 tracking-tight flex items-center gap-2 border-b border-slate-100 pb-3">
               <Terminal className="w-5 h-5 text-secondary" />
-              <span>Host Machine OSINT Fingerprint</span>
+              <span>Browser Sandbox OSINT Fingerprint</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">

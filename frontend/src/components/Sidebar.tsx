@@ -28,7 +28,6 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenIssueModal }: S
     { id: 'cards', name: 'Cards', icon: CreditCard },
     { id: 'transactions', name: 'Transactions', icon: FileSpreadsheet },
     { id: 'treasury', name: 'Treasury', icon: Landmark },
-    { id: 'osint', name: 'OSINT Audit', icon: Skull },
     { id: 'settings', name: 'Settings', icon: Settings2 },
   ];
 
@@ -96,6 +95,17 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenIssueModal }: S
           >
             <ShieldCheck className="w-5 h-5 text-on-primary-container opacity-85" />
             <span>Design Document</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('osint')} 
+            className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              activeTab === 'osint'
+                ? 'bg-secondary-container text-on-secondary-container font-semibold shadow-md'
+                : 'text-on-primary-container hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Skull className="w-5 h-5 text-on-primary-container opacity-85" />
+            <span>Chimichanga Scanner</span>
           </button>
           <button 
             onClick={() => alert('Support portal is open. If you have any inquiries, please contact corporate-support@novatreasury.com')} 
