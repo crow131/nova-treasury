@@ -22,8 +22,8 @@ interface SettingsViewProps {
 }
 
 export default function SettingsView({ lookbackDays, onUpdateLookbackDays }: SettingsViewProps) {
-  const [profileName, setProfileName] = useState('Alexander Sterling');
-  const [profileMail, setProfileMail] = useState('alexander.sterling@novatreasury.com');
+  const [profileName, setProfileName] = useState('Christopher Kraft');
+  const [profileMail, setProfileMail] = useState('christopher.kraft@novatreasury.com');
   const [profileDept, setProfileDept] = useState('Sovereign Enterprise Treasury');
   
   const [webhookUrl, setWebhookUrl] = useState('https://github.com/crow131/nova-treasury/webhooks');

@@ -376,25 +376,6 @@ export default function OverviewView({
         </div>
       </div>
 
-      {/* Overview Floating quick access */}
-      <div className="bg-slate-900 text-white rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 border border-white/10 shadow-lg">
-        <div className="space-y-1">
-          <p className="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block animate-ping"></span>
-            Enterprise Ledger is Live & Operating
-          </p>
-          <p className="text-xs text-slate-300 font-medium">
-            System automatically synchronized real-time feed with Goldman, AWS, and local card limits. Last tick: Just now
-          </p>
-        </div>
-        <button 
-          onClick={onOpenNewTransfer}
-          className="bg-secondary-container text-white text-xs font-bold px-5 py-2.5 rounded-lg border-none hover:brightness-115 active:scale-95 shadow transition-all cursor-pointer flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Transfer</span>
-        </button>
-      </div>
     </div>
   );
 }

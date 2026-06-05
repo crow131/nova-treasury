@@ -9,8 +9,8 @@ interface HeaderProps {
 
 export default function Header({ activeTab }: HeaderProps) {
   const getProfileName = () => {
-    if (activeTab === 'settings') return 'Alexander Sterling';
-    return 'Alex Chen';
+    if (activeTab === 'settings') return 'Christopher Kraft';
+    return 'Gene Kranz';
   };
 
   const getProfileRole = () => {
@@ -76,7 +76,7 @@ export default function Header({ activeTab }: HeaderProps) {
           {/* Custom Initials Avatar */}
           <div className="h-10 w-10 rounded-full bg-primary-container flex items-center justify-center text-white font-bold text-sm border-2 border-[#1e293b] overflow-hidden shadow-inner group-hover:border-secondary transition-all">
             <span className="text-[13px]">
-              {activeTab === 'settings' ? 'AS' : 'AC'}
+              {activeTab === 'settings' ? 'CK' : 'GK'}
             </span>
           </div>
         </div>

@@ -88,7 +88,7 @@ export function IssueCardModal({ isOpen, onClose, onIssueCard }: IssueCardModalP
               type="text" 
               value={holderName}
               onChange={(e) => setHolderName(e.target.value)}
-              placeholder="e.g. Sarah Jenkins"
+              placeholder="e.g. Neil Armstrong"
               className="w-full border border-outline bg-white px-3 py-2 text-sm outline-none font-semibold text-slate-800 rounded focus:ring-1 focus:ring-slate-900"
             />
           </div>
