@@ -2,6 +2,8 @@
 
 Nova Treasury is a premium, real-time treasury management application that facilitates corporate card issuance, transaction tracking, and multi-currency exchange rate conversions. The system leverages the **U.S. Treasury Reporting Rates of Exchange API** with robust caching and resilient retry mechanisms to deliver accurate conversion calculations.
 
+![Nova Treasury Overview Dashboard](overview.png)
+
 ---
 
 ## 🏛️ System Architecture
