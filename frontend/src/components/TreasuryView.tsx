@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Landmark, 
   RefreshCw, 
@@ -9,46 +9,96 @@ import {
   Copy, 
   Check, 
   FileJson, 
-  TrendingDown, 
-  TrendingUp, 
   Globe, 
   Cpu 
 } from 'lucide-react';
-import { Card, ExchangeRate } from '../types';
-import { EXCHANGE_RATES } from '../data';
+import { Card } from '../types';
 
 interface TreasuryViewProps {
   cards: Card[];
 }
 
+interface BalanceData {
+  cardId: string;
+  holder: string;
+  last4: string;
+  limit: number;
+  spentUsd: number;
+  availableBalanceUsd: number;
+  targetCurrency: string;
+  exchangeRateUsed: number;
+  convertedAvailableBalance: number;
+}
+
 export default function TreasuryView({ cards }: TreasuryViewProps) {
-  const [selectedCardId, setSelectedCardId] = useState<string>(cards[0]?.id || 'card_001');
+  const [selectedCardId, setSelectedCardId] = useState<string>(cards[0]?.id || '');
   const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string>('EUR');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [lastSyncTime, setLastSyncTime] = useState<string>('Oct 24, 2023, 14:24 UT');
   const [copiedText, setCopiedText] = useState<boolean>(false);
+  const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
   const selectedCard = useMemo(() => {
     return cards.find(c => c.id === selectedCardId) || cards[0];
   }, [cards, selectedCardId]);
 
-  const selectedRate = useMemo(() => {
-    return EXCHANGE_RATES.find(r => r.code === selectedCurrencyCode) || EXCHANGE_RATES[0];
-  }, [selectedCurrencyCode]);
+  // Set initial selected card id when cards load
+  useEffect(() => {
+    if (cards.length > 0 && !selectedCardId) {
+      setSelectedCardId(cards[0].id);
+    }
+  }, [cards, selectedCardId]);
 
-  // Live conversion calculations
-  const spentInUSD = selectedCard ? selectedCard.spent : 0;
-  const convertedSpent = spentInUSD * selectedRate.rate;
+  // Fetch converted balance details
+  const fetchConvertedBalance = async () => {
+    if (!selectedCardId) return;
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${apiBaseUrl}/api/cards/${selectedCardId}/balance?currency=${selectedCurrencyCode}`);
+      if (res.ok) {
+        const data = await res.json();
+        setBalanceData(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch converted balance:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const limitInUSD = selectedCard ? selectedCard.limit : 0;
-  const convertedLimit = limitInUSD * selectedRate.rate;
+  useEffect(() => {
+    fetchConvertedBalance();
+  }, [selectedCardId, selectedCurrencyCode]);
 
-  const availableInUSD = limitInUSD - spentInUSD;
-  const convertedAvailable = availableInUSD * selectedRate.rate;
+  // Currency symbols mapping
+  const currencySymbols: Record<string, string> = {
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'JPY': '¥',
+    'CAD': 'CA$',
+    'AUD': 'A$'
+  };
+
+  const currentSymbol = currencySymbols[selectedCurrencyCode] || '$';
+
+  // Live conversion calculations from API data
+  const spentInUSD = balanceData?.spentUsd ?? (selectedCard?.spent ?? 0);
+  const limitInUSD = balanceData?.limit ?? (selectedCard?.limit ?? 0);
+  const availableInUSD = balanceData?.availableBalanceUsd ?? (limitInUSD - spentInUSD);
+
+  const exchangeRate = balanceData?.exchangeRateUsed ?? 1.0;
+  const convertedSpent = spentInUSD * exchangeRate;
+  const convertedLimit = limitInUSD * exchangeRate;
+  const convertedAvailable = balanceData?.convertedAvailableBalance ?? (availableInUSD * exchangeRate);
 
   const handleTriggerSync = () => {
     setIsSyncing(true);
-    setTimeout(() => {
+    setTimeout(async () => {
+      await fetchConvertedBalance();
       setIsSyncing(false);
       const now = new Date();
       setLastSyncTime(now.toLocaleString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' UT');
@@ -62,8 +112,8 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
       account_uuid: `NOVA-8821-${selectedCard?.last4 || '4412'}`,
       card_holder: selectedCard?.holder || 'Unknown',
       base_currency: 'USD',
-      converted_currency: selectedRate.code,
-      exchange_rate: selectedRate.rate,
+      converted_currency: selectedCurrencyCode,
+      exchange_rate: exchangeRate,
       balances: {
         spent_usd: spentInUSD,
         spent_converted: Number(convertedSpent.toFixed(2)),
@@ -90,7 +140,7 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
         </div>
         <button 
           onClick={handleTriggerSync}
-          disabled={isSyncing}
+          disabled={isSyncing || isLoading}
           className="px-4 py-2 border border-outline-variant bg-white text-on-surface text-sm font-semibold rounded-lg hover:bg-slate-50 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center gap-2 cursor-pointer shadow-sm"
         >
           <RefreshCw className={`w-4 h-4 text-on-surface-variant ${isSyncing ? 'animate-spin text-secondary' : ''}`} />
@@ -143,14 +193,14 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
                     onChange={(e) => setSelectedCurrencyCode(e.target.value)}
                     className="flex-1 border border-outline bg-white px-4 py-3 rounded-lg text-sm font-semibold outline-none focus:ring-1 focus:ring-secondary cursor-pointer"
                   >
-                    {EXCHANGE_RATES.map(rate => (
-                      <option key={rate.code} value={rate.code}>
-                        {rate.code} — {rate.name}
-                      </option>
-                    ))}
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — British Pound</option>
+                    <option value="JPY">JPY — Japanese Yen</option>
+                    <option value="CAD">CAD — Canadian Dollar</option>
+                    <option value="AUD">AUD — Australia Dollar</option>
                   </select>
                   <div className="w-12 rounded-lg bg-slate-50 border border-outline flex items-center justify-center font-mono font-bold text-slate-800 text-sm">
-                    {selectedRate.symbol}
+                    {currentSymbol}
                   </div>
                 </div>
               </div>
@@ -160,33 +210,39 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
             {/* Conversion Result Block */}
             <div className="bg-slate-50 rounded-xl p-6 border border-outline-variant/60 relative overflow-hidden">
               <div className="absolute right-4 top-4 font-mono font-extrabold text-7xl text-slate-200/40 select-none">
-                {selectedRate.code}
+                {selectedCurrencyCode}
               </div>
 
               {/* Math Display math-equation */}
-              <div className="space-y-4">
-                <span className="text-[10px] font-bold text-on-surface-variant/80 tracking-widest uppercase block">
-                  Interactive ledger conversion readout
-                </span>
-                
-                <div className="flex flex-col md:flex-row md:items-baseline gap-2">
-                  <div className="text-3xl font-mono text-slate-900 font-bold">
-                    ${spentInUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-on-surface-variant/70 self-center hidden md:block" />
-                  <div className="text-3xl font-mono text-secondary font-bold">
-                    {selectedRate.symbol}{convertedSpent.toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedRate.code}
-                  </div>
+              {isLoading ? (
+                <div className="py-8 flex justify-center items-center">
+                  <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  <span className="text-[10px] font-bold text-on-surface-variant/80 tracking-widest uppercase block">
+                    Interactive ledger conversion readout
+                  </span>
+                  
+                  <div className="flex flex-col md:flex-row md:items-baseline gap-2">
+                    <div className="text-3xl font-mono text-slate-900 font-bold">
+                      ${spentInUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-on-surface-variant/70 self-center hidden md:block" />
+                    <div className="text-3xl font-mono text-secondary font-bold">
+                      {currentSymbol}{convertedSpent.toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedCurrencyCode}
+                    </div>
+                  </div>
 
-                <div className="pt-4 border-t border-slate-200/60 max-w-lg">
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
-                    Equation: <span className="font-mono text-slate-900 font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200">
-                      Spent Amount (${spentInUSD.toLocaleString()}) * Rate ({selectedRate.rate}) = Converted Value ({selectedRate.symbol}{convertedSpent.toLocaleString(undefined, { minimumFractionDigits: 2 })})
-                    </span>
-                  </p>
+                  <div className="pt-4 border-t border-slate-200/60 max-w-lg">
+                    <p className="text-xs text-on-surface-variant leading-relaxed">
+                      Equation: <span className="font-mono text-slate-900 font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                        Spent Amount (${spentInUSD.toLocaleString()}) * Rate ({exchangeRate.toFixed(4)}) = Converted Value ({currentSymbol}{convertedSpent.toLocaleString(undefined, { minimumFractionDigits: 2 })})
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Balance Conversion Breakdown Cards */}
@@ -194,7 +250,7 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
               <div className="p-4 bg-slate-50 border border-outline-variant rounded-lg">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase">Converted Total Credit Limit</p>
                 <p className="text-xl font-mono font-extrabold text-slate-900 mt-1">
-                  {selectedRate.symbol}{convertedLimit.toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedRate.code}
+                  {currentSymbol}{convertedLimit.toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedCurrencyCode}
                 </p>
                 <p className="text-[10px] text-on-surface-variant/80 mt-1">
                   Base USD: ${limitInUSD.toLocaleString()}
@@ -204,7 +260,7 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
               <div className="p-4 bg-slate-50 border border-outline-variant rounded-lg">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase">Converted Available Liquidity</p>
                 <p className="text-xl font-mono font-extrabold text-emerald-700 mt-1">
-                  {selectedRate.symbol}{convertedAvailable.toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedRate.code}
+                  {currentSymbol}{convertedAvailable.toLocaleString(undefined, { minimumFractionDigits: 2 })} {selectedCurrencyCode}
                 </p>
                 <p className="text-[10px] text-on-surface-variant/80 mt-1">
                   Base USD: ${availableInUSD.toLocaleString()}
@@ -212,23 +268,6 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
               </div>
             </div>
 
-          </div>
-
-          {/* conversion history simulation */}
-          <div className="bg-white border border-outline-variant rounded-xl p-6 shadow-sm space-y-4">
-            <h4 className="font-bold text-base text-slate-900">Exchange rates overview</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {EXCHANGE_RATES.map(rate => (
-                <div key={rate.code} className="p-4 border border-outline rounded-lg flex flex-col justify-between">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-slate-900">{rate.code}</span>
-                    <Globe className="w-3.5 h-3.5 text-on-surface-variant" />
-                  </div>
-                  <p className="font-mono text-lg font-bold text-slate-900 mt-2">{rate.rate}</p>
-                  <span className="text-[10px] text-on-surface-variant mt-0.5">{rate.name}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
         </section>
@@ -295,9 +334,9 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
               <p className="pl-4"><span className="text-yellow-300">"account_uuid"</span>: <span className="text-emerald-400">"NOVA-8821-{selectedCard?.last4 || '4412'}"</span>,</p>
               <p className="pl-4"><span className="text-yellow-300">"card_holder"</span>: <span className="text-emerald-400">"{selectedCard?.holder || 'Unknown'}"</span>,</p>
               <p className="pl-4"><span className="text-yellow-300">"base_currency"</span>: <span className="text-emerald-400">"USD"</span>,</p>
-              <p className="pl-4"><span className="text-yellow-300">"exchange"</span>: <span className="text-sky-400">{"{"}</span></p>
-              <p className="pl-8"><span className="text-yellow-300">"rate"</span>: <span className="text-amber-400">{selectedRate.rate}</span>,</p>
-              <p className="pl-8"><span className="text-yellow-300">"target_code"</span>: <span className="text-emerald-400">"{selectedRate.code}"</span></p>
+              <p className="pl-4"><span className="text-exchange">"exchange"</span>: <span className="text-sky-400">{"{"}</span></p>
+              <p className="pl-8"><span className="text-yellow-300">"rate"</span>: <span className="text-amber-400">{exchangeRate.toFixed(4)}</span>,</p>
+              <p className="pl-8"><span className="text-yellow-300">"target_code"</span>: <span className="text-emerald-400">"{selectedCurrencyCode}"</span></p>
               <p className="pl-4"><span className="text-sky-400">{"}"}</span>,</p>
               <p className="pl-4"><span className="text-yellow-300">"balances_usd"</span>: <span className="text-sky-400">{"{"}</span></p>
               <p className="pl-8"><span className="text-yellow-300">"spent"</span>: <span className="text-amber-400">{spentInUSD}</span>,</p>

@@ -1,13 +1,40 @@
+# Node/Next.js exclusions
 node_modules/
-build/
-dist/
-coverage/
-.DS_Store
-*.log
-.env*
-!.env.example
 .next/
 out/
 .vercel/
 *.tsbuildinfo
+build/
+dist/
+coverage/
 
+# OS/Logs exclusions
+.DS_Store
+Thumbs.db
+*.log
+
+# Environment/Secrets exclusions
+.env*
+!.env.example
+
+# .NET/C# exclusions
+bin/
+obj/
+*bin\\*
+*obj\\*
+*.user
+*.suo
+*.sln.docstates
+.vs/
+.idea/
+.aspire/
+TestResults/
+*.userosscache
+*.suo
+*.userprefs
+
+# IDE exclusions
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json

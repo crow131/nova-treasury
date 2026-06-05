@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import OverviewView from '../components/OverviewView';
@@ -10,75 +10,155 @@ import TreasuryView from '../components/TreasuryView';
 import SettingsView from '../components/SettingsView';
 import { IssueCardModal, RecordTransactionModal } from '../components/Modals';
 import { Card, Transaction } from '../types';
-import { INITIAL_CARDS, INITIAL_TRANSACTIONS } from '../data';
 
 export default function Home() {
-  // State elements
   const [activeTab, setActiveTab] = useState<string>('overview');
-  const [cards, setCards] = useState<Card[]>(INITIAL_CARDS);
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [lookbackDays, setLookbackDays] = useState<number>(30);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Modal open controllers
   const [issueCardModalOpen, setIssueCardModalOpen] = useState<boolean>(false);
   const [recordTransactionModalOpen, setRecordTransactionModalOpen] = useState<boolean>(false);
 
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+  // Fetch initial data
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const cardsRes = await fetch(`${apiBaseUrl}/api/cards`);
+      if (cardsRes.ok) {
+        const cardsData = await cardsRes.json();
+        setCards(cardsData);
+      }
+
+      const txsRes = await fetch(`${apiBaseUrl}/api/transactions`);
+      if (txsRes.ok) {
+        const txsData = await txsRes.json();
+        setTransactions(txsData);
+      }
+    } catch (error) {
+      console.error("Failed to connect to Nova Treasury API:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   // Operation Actions
-  const handleIssueCard = (newCard: Card) => {
-    setCards([newCard, ...cards]);
+  const handleIssueCard = async (newCard: Card) => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/cards`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          holder: newCard.holder,
+          limit: newCard.limit,
+          cardType: newCard.cardType,
+          relativeBg: newCard.relativeBg
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(`Declined: ${errorData.detail || 'Failed to issue card.'}`);
+        return;
+      }
+
+      await fetchData(); // Refresh data from backend
+      setIssueCardModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert('Network error connecting to Treasury API.');
+    }
   };
 
-  const handleRecordTransaction = (newTx: Transaction) => {
-    setTransactions([newTx, ...transactions]);
-    
-    // Dynamically update card spent balance to trace state update accurately!
-    setCards(currentCards => 
-      currentCards.map(card => {
-        if (card.last4 === newTx.cardLast4) {
-          return {
-            ...card,
-            spent: card.spent + Math.abs(newTx.amount)
-          };
-        }
-        return card;
-      })
-    );
+  const handleRecordTransaction = async (newTx: Transaction) => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/transactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: newTx.description,
+          amount: newTx.amount,
+          cardLast4: newTx.cardLast4,
+          category: newTx.category,
+          entity: newTx.entity,
+          date: new Date()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(`Declined: ${errorData.detail || 'Failed to record transaction.'}`);
+        return;
+      }
+
+      await fetchData(); // Refresh data from backend
+      setRecordTransactionModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert('Network error connecting to Treasury API.');
+    }
   };
 
-  const handleUpdateCardLimit = (cardId: string, newLimit: number) => {
-    setCards(currentCards => 
-      currentCards.map(card => {
-        if (card.id === cardId) {
-          return {
-            ...card,
-            limit: newLimit
-          };
-        }
-        return card;
-      })
-    );
+  const handleUpdateCardLimit = async (cardId: string, newLimit: number) => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/cards/${cardId}/limit`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newLimit)
+      });
+
+      if (!response.ok) {
+        alert('Failed to update card limit.');
+        return;
+      }
+
+      await fetchData(); // Refresh data from backend
+    } catch (err) {
+      console.error(err);
+      alert('Network error updating card limit.');
+    }
   };
 
-  const handleToggleCardStatus = (cardId: string) => {
-    setCards(currentCards => 
-      currentCards.map(card => {
-        if (card.id === cardId) {
-          return {
-            ...card,
-            status: card.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE'
-          };
-        }
-        return card;
-      })
-    );
+  const handleToggleCardStatus = async (cardId: string) => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/cards/${cardId}/toggle-status`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        alert('Failed to update card status.');
+        return;
+      }
+
+      await fetchData(); // Refresh data from backend
+    } catch (err) {
+      console.error(err);
+      alert('Network error updating card status.');
+    }
   };
 
   const handleUpdateLookbackDays = (days: number) => {
     setLookbackDays(days);
   };
 
-  // Switch rendered pages dynamically based on active tab selection
   const renderActiveView = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center p-24 space-y-4">
+          <div className="w-12 h-12 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500 font-medium">Connecting to Goldman Liquidity Hub...</p>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'overview':
         return (
@@ -132,14 +212,14 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-on-surface flex font-sans select-none antialiased">
       
-      {/* Sidebar Navigation (Fixed layout width) */}
+      {/* Sidebar Navigation */}
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onOpenIssueModal={() => setIssueCardModalOpen(true)}
       />
 
-      {/* Main content viewport space (Offset by sidebar width: 280px) */}
+      {/* Main content viewport space */}
       <div className="flex-1 flex flex-col pl-[280px] min-h-screen">
         
         {/* Top common search & profile header */}
