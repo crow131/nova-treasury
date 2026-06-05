@@ -5,6 +5,7 @@ using backend_api.Domain;
 using backend_api.DTOs;
 using backend_api.Controllers;
 using backend_api.Services;
+using backend_api.Interfaces;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -50,7 +51,8 @@ namespace backend_api.Tests
         {
             // Arrange
             using var context = new TreasuryDbContext(_dbContextOptions);
-            var controller = new CardsController(context, _mockTreasuryService.Object);
+            var cardService = new CardService(context, _mockTreasuryService.Object);
+            var controller = new CardsController(cardService);
             var request = new CreateCardRequest
             {
                 Holder = "John Doe",
@@ -100,7 +102,8 @@ namespace backend_api.Tests
                 .ReturnsAsync(0.92m);
 
             using var testContext = new TreasuryDbContext(_dbContextOptions);
-            var controller = new CardsController(testContext, _mockTreasuryService.Object);
+            var cardService = new CardService(testContext, _mockTreasuryService.Object);
+            var controller = new CardsController(cardService);
 
             // Act
             var actionResult = await controller.GetConvertedBalance(cardId, "EUR");
@@ -137,7 +140,8 @@ namespace backend_api.Tests
             }
 
             using var testContext = new TreasuryDbContext(_dbContextOptions);
-            var controller = new TransactionsController(testContext, _mockTreasuryService.Object);
+            var transactionService = new TransactionService(testContext, _mockTreasuryService.Object);
+            var controller = new TransactionsController(transactionService);
             var request = new CreateTransactionRequest
             {
                 CardLast4 = "5555",
@@ -181,7 +185,8 @@ namespace backend_api.Tests
             }
 
             using var testContext = new TreasuryDbContext(_dbContextOptions);
-            var controller = new TransactionsController(testContext, _mockTreasuryService.Object);
+            var transactionService = new TransactionService(testContext, _mockTreasuryService.Object);
+            var controller = new TransactionsController(transactionService);
             var request = new CreateTransactionRequest
             {
                 CardLast4 = "4444",
@@ -189,14 +194,9 @@ namespace backend_api.Tests
                 Description = "Office desk"
             };
 
-            // Act
-            var actionResult = await controller.RecordTransaction(request);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult.Result);
-            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
-            Assert.Equal(400, problemDetails.Status);
-            Assert.Equal("Transaction Declined", problemDetails.Title);
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<BusinessRuleException>(() => controller.RecordTransaction(request));
+            Assert.Contains("Insufficient funds", exception.Message);
         }
 
         [Fact]
@@ -220,7 +220,8 @@ namespace backend_api.Tests
             }
 
             using var testContext = new TreasuryDbContext(_dbContextOptions);
-            var controller = new TransactionsController(testContext, _mockTreasuryService.Object);
+            var transactionService = new TransactionService(testContext, _mockTreasuryService.Object);
+            var controller = new TransactionsController(transactionService);
             var request = new CreateTransactionRequest
             {
                 CardLast4 = "1111",
@@ -228,14 +229,9 @@ namespace backend_api.Tests
                 Description = "Locked test"
             };
 
-            // Act
-            var actionResult = await controller.RecordTransaction(request);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult.Result);
-            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
-            Assert.Equal(400, problemDetails.Status);
-            Assert.Contains("frozen/locked", problemDetails.Detail);
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<BusinessRuleException>(() => controller.RecordTransaction(request));
+            Assert.Contains("frozen/locked", exception.Message);
         }
     }
 }

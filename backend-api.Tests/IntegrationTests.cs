@@ -17,6 +17,7 @@ using Xunit;
 using backend_api.Data;
 using backend_api.Domain;
 using backend_api.Services;
+using backend_api.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend_api.Tests

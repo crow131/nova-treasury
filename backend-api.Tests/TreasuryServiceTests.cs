@@ -10,6 +10,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 using backend_api.Services;
+using backend_api.Interfaces;
 
 namespace backend_api.Tests
 {

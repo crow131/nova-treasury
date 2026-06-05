@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace backend_api.Services
+namespace backend_api.Interfaces
 {
     public interface ITreasuryService
     {

@@ -13,6 +13,7 @@ using Polly.CircuitBreaker;
 using Polly.Retry;
 using backend_api.Data;
 using backend_api.Services;
+using backend_api.Interfaces;
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -53,6 +54,10 @@ builder.Services.AddDbContext<TreasuryDbContext>(options =>
 
 // Add Memory Cache
 builder.Services.AddMemoryCache();
+
+// Register Services
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 // Register Health Checks
 builder.Services.AddHealthChecks()
