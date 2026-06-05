@@ -11,7 +11,8 @@ import {
   HelpCircle, 
   LogOut,
   BookOpen,
-  ShieldCheck
+  ShieldCheck,
+  Skull
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,6 +28,7 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenIssueModal }: S
     { id: 'cards', name: 'Cards', icon: CreditCard },
     { id: 'transactions', name: 'Transactions', icon: FileSpreadsheet },
     { id: 'treasury', name: 'Treasury', icon: Landmark },
+    { id: 'osint', name: 'OSINT Audit', icon: Skull },
     { id: 'settings', name: 'Settings', icon: Settings2 },
   ];
 
