@@ -70,17 +70,19 @@ graph TD
 
 ### Option A: Using the Startup Script (Recommended)
 
-To automatically build, boot, wait for the Next.js frontend to be ready, and open the application in your default browser, run the provided startup script:
+To automatically build, boot, wait for the Next.js frontend to be ready, and open the application in your default browser, run the provided startup script.
 
 #### 🍎 macOS & 🐧 Linux
-Run the script directly from your terminal:
+First, ensure the script has execution permissions, then run it:
 ```bash
+chmod +x start.sh
 ./start.sh
 ```
 
 #### 🪟 Windows
 Since standard Command Prompt (`cmd.exe`) and PowerShell do not natively support shell scripts, run the script within a Unix-compatible emulator (such as **Git Bash** or a **WSL terminal**):
 ```bash
+chmod +x start.sh  # (If needed in Git Bash / WSL)
 ./start.sh
 ```
 
