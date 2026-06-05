@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 using System.Linq;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,16 +37,43 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure EF Core Npgsql
+// Configure EF Core DbContext (Supports Npgsql in Prod/Dev and SQLite in Tests)
 builder.Services.AddDbContext<TreasuryDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (connectionString != null && connectionString.Contains("Host="))
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlite(connectionString ?? "Data Source=treasury.db");
+    }
+});
 
 // Add Memory Cache
 builder.Services.AddMemoryCache();
 
 // Register Health Checks
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<TreasuryDbContext>("database");
+    .AddDbContextCheck<TreasuryDbContext>("database", tags: new[] { "ready" });
+
+// Register Exception Handler and Problem Details
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+// Configure Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter(policyName: "StrictPolicy", fixedOptions =>
+    {
+        fixedOptions.PermitLimit = 30;
+        fixedOptions.Window = TimeSpan.FromSeconds(60);
+        fixedOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        fixedOptions.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // Register Resilient Treasury API Client
 builder.Services.AddHttpClient<ITreasuryService, TreasuryService>(client =>
@@ -107,7 +136,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Apply migrations automatically on startup with retry logic
+// Apply migrations automatically on startup with retry logic (dynamic for PG vs SQLite)
 int maxRetries = 10;
 for (int i = 0; i < maxRetries; i++)
 {
@@ -116,9 +145,16 @@ for (int i = 0; i < maxRetries; i++)
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TreasuryDbContext>();
-            await db.Database.MigrateAsync();
+            if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                await db.Database.EnsureCreatedAsync();
+            }
+            else
+            {
+                await db.Database.MigrateAsync();
+            }
         }
-        Console.WriteLine("Database migrations applied successfully.");
+        Console.WriteLine("Database setup completed successfully.");
         break;
     }
     catch (Exception ex)
@@ -134,6 +170,8 @@ for (int i = 0; i < maxRetries; i++)
 }
 
 // Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -145,14 +183,24 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseRouting();
+
 app.UseCors("AllowFrontend");
+
+app.UseRateLimiter();
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapHealthChecks("/health", new HealthCheckOptions
+app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
+    Predicate = _ => false
+});
+
+var readyHealthCheckOptions = new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
@@ -171,8 +219,13 @@ app.MapHealthChecks("/health", new HealthCheckOptions
         };
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));
     }
-});
+};
+
+app.MapHealthChecks("/health/ready", readyHealthCheckOptions);
+app.MapHealthChecks("/health", readyHealthCheckOptions);
 
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

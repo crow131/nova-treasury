@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 using backend_api.Data;
 using backend_api.Domain;
 using backend_api.DTOs;
@@ -13,6 +14,7 @@ namespace backend_api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableRateLimiting("StrictPolicy")]
     public class CardsController : ControllerBase
     {
         private readonly TreasuryDbContext _context;
@@ -29,6 +31,7 @@ namespace backend_api.Controllers
         public async Task<ActionResult<IEnumerable<Card>>> GetCards()
         {
             var cards = await _context.Cards
+                .AsNoTracking()
                 .OrderBy(c => c.CreatedAt)
                 .ToListAsync();
             return Ok(cards);
@@ -38,7 +41,9 @@ namespace backend_api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Card>> GetCard(Guid id)
         {
-            var card = await _context.Cards.FindAsync(id);
+            var card = await _context.Cards
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
             if (card == null)
             {
                 return NotFound(new ProblemDetails
@@ -163,7 +168,9 @@ namespace backend_api.Controllers
         [HttpGet("{id}/balance")]
         public async Task<ActionResult<CardBalanceResponse>> GetConvertedBalance(Guid id, [FromQuery] string currency = "USD")
         {
-            var card = await _context.Cards.FindAsync(id);
+            var card = await _context.Cards
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
             if (card == null)
             {
                 return NotFound(new ProblemDetails

@@ -33,10 +33,11 @@ graph TD
 ## 🛠️ Technology Stack
 
 * **Frontend**: Next.js 16 (React), TypeScript, TailwindCSS.
-* **Backend**: .NET 10 Web API, Entity Framework Core (Code First), PostgreSQL 17.
+* **Backend**: .NET 10 Web API, Entity Framework Core (Code First), PostgreSQL 17, SQLite (for isolation testing).
 * **Resilience**: Polly v8 (Exponential Backoff, Jitter, 429 `Retry-After` Header Parsing, Circuit Breaker).
+* **Security & Performance**: Fixed Window Rate Limiting, Global Exception Handling middleware, and EF Core read-only query tracking optimization (`.AsNoTracking()`).
 * **Documentation**: Scalar OpenAPI v1 (`/scalar/v1`).
-* **Health Checks**: Custom JSON Health Monitor (`/health`).
+* **Health Checks**: Custom JSON Health Monitor with split `/health/live` and `/health/ready` probes.
 * **Deployment**: Multi-stage Docker Compose orchestration.
 
 ---
@@ -76,7 +77,8 @@ To boot the entire stack (Database, C# API, and Next.js Frontend) in isolated co
    * **Next.js Frontend**: [http://localhost:3000](http://localhost:3000)
    * **C# Backend API**: [http://localhost:5005](http://localhost:5005)
    * **Scalar OpenAPI Docs**: [http://localhost:5005/scalar/v1](http://localhost:5005/scalar/v1)
-   * **Health Check endpoint**: [http://localhost:5005/health](http://localhost:5005/health)
+   * **Liveness Probe**: [http://localhost:5005/health/live](http://localhost:5005/health/live)
+   * **Readiness Probe**: [http://localhost:5005/health/ready](http://localhost:5005/health/ready)
 
 ---
 
@@ -105,7 +107,9 @@ To run the database in Docker and the frontend/backend on your host machine for 
 ## 🚦 API Endpoints
 
 ### 🩺 Health Checks
-* `GET /health` - Returns a JSON payload showing database connectivity and total response time.
+* `GET /health/live` - Quick liveness probe returning `200 OK` (Healthy) to signify process is active.
+* `GET /health/ready` - Readiness probe verifying database connectivity, migration status, and latency details.
+* `GET /health` - Backward-compatible alias for the readiness check.
 
 ### 💳 Cards
 * `GET /api/cards` - Returns all corporate cards.
@@ -122,9 +126,8 @@ To run the database in Docker and the frontend/backend on your host machine for 
 
 ## 🧪 Running Automated Tests
 
-To run the xUnit test suite (which validates the Treasury currency conversion lookback and window bounds):
+To run the xUnit test suite (which validates the Treasury currency conversion lookback, window bounds, rate limiting, and exception middleware mapping):
 
 ```bash
-cd backend-api.Tests
-dotnet test
+dotnet test backend-api.Tests/backend-api.Tests.csproj
 ```

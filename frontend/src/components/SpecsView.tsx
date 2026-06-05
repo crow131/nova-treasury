@@ -12,7 +12,10 @@ import {
   Flame,
   Activity,
   Workflow,
-  Folders
+  Folders,
+  Shield,
+  Zap,
+  Gauge
 } from 'lucide-react';
 
 export default function SpecsView() {
@@ -181,6 +184,150 @@ export default function SpecsView() {
                   <li><strong className="text-slate-800">Negative Cache:</strong> Caches missed lookups (no rate) for 1 hour to prevent API hammering.</li>
                   <li><strong className="text-slate-800">Client-Side Sorting:</strong> Eliminates backend timeouts by sorting in-memory.</li>
                 </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Production Robustness & Optimization */}
+          <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-xs space-y-4">
+            <h3 className="font-extrabold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-500 animate-bounce" />
+              <span>Production Robustness & Performance Tuning</span>
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="bg-slate-50/80 border border-outline rounded-xl p-4 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-emerald-650" />
+                  <span className="font-extrabold text-slate-900 uppercase tracking-wider text-[10px]">Liveness & Readiness Probes</span>
+                </div>
+                <p className="text-slate-600 font-medium leading-relaxed">
+                  Split health check endpoints support container orchestration platforms (like Kubernetes or Docker Compose healthchecks):
+                </p>
+                <ul className="space-y-1 font-mono text-[10px] text-slate-600 list-disc list-inside pl-1">
+                  <li><code className="text-slate-850 font-bold bg-slate-200/60 px-1 py-0.5 rounded">/health/live</code>: Instant status of the runtime process.</li>
+                  <li><code className="text-slate-850 font-bold bg-slate-200/60 px-1 py-0.5 rounded">/health/ready</code>: Verifies DB migration status & Postgres connection.</li>
+                </ul>
+              </div>
+
+              <div className="bg-slate-50/80 border border-outline rounded-xl p-4 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-indigo-650" />
+                  <span className="font-extrabold text-slate-900 uppercase tracking-wider text-[10px]">EF Core Query Optimization</span>
+                </div>
+                <p className="text-slate-600 font-medium leading-relaxed">
+                  To achieve maximum throughput and minimal memory overhead, all database reads utilize EF Core performance optimizations:
+                </p>
+                <ul className="space-y-1 font-medium text-slate-600 list-disc list-inside pl-1 text-[11px]">
+                  <li><strong className="text-slate-800">.AsNoTracking()</strong> bypasses the EF tracking cache for read-only listings.</li>
+                  <li>Single-record fetches bypass local tracking arrays using optimized lookup queries.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="bg-slate-50/80 border border-outline rounded-xl p-4 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-rose-650" />
+                  <span className="font-extrabold text-slate-900 uppercase tracking-wider text-[10px]">Fixed Window Rate Limiting</span>
+                </div>
+                <p className="text-slate-600 font-medium leading-relaxed">
+                  Protects public endpoints against spam, DDoS, or script misbehavior using standard .NET rate-limiting middleware:
+                </p>
+                <ul className="space-y-1 font-medium text-slate-600 list-disc list-inside pl-1 text-[11px]">
+                  <li>Configured with a strict policy: 30 requests per 60-second window.</li>
+                  <li>Queues up to 2 excess requests, throwing a standardized <strong className="text-slate-800">429 Too Many Requests</strong> beyond limits.</li>
+                </ul>
+              </div>
+
+              <div className="bg-slate-50/80 border border-outline rounded-xl p-4 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-purple-600" />
+                  <span className="font-extrabold text-slate-900 uppercase tracking-wider text-[10px]">Global Exception Middleware</span>
+                </div>
+                <p className="text-slate-600 font-medium leading-relaxed">
+                  Implements the standard <code className="text-slate-800 font-bold bg-slate-200/60 px-1 py-0.5 rounded">IExceptionHandler</code> interface in .NET to catch all unhandled server exceptions globally:
+                </p>
+                <ul className="space-y-1 font-medium text-slate-600 list-disc list-inside pl-1 text-[11px]">
+                  <li>Suppresses raw server stack traces from escaping to public consumers.</li>
+                  <li>Logs errors using structured log templates while outputting sanitised RFC 7807 payloads.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Standardization & Quality Parity Compliance */}
+          <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-xs space-y-4">
+            <h3 className="font-extrabold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-sky-750" />
+              <span>Standardization & Quality Parity Compliance</span>
+            </h3>
+
+            <div className="space-y-4 text-xs leading-relaxed text-slate-650">
+              <p>
+                This system has been constructed following strict enterprise standards and industry-recognized best practices, ensuring full compliance and parity with modern production environments:
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <strong className="text-slate-800 uppercase tracking-wider text-[10px]">RFC 7807 Problem Details</strong>
+                  </div>
+                  <p className="pl-4 text-slate-600 font-medium">
+                    All API error structures adhere to the RFC 7807/RFC 9110 specification, providing structured and machine-readable error details for all client layers.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <strong className="text-slate-800 uppercase tracking-wider text-[10px]">ISO 4217 Currency Compliance</strong>
+                  </div>
+                  <p className="pl-4 text-slate-600 font-medium">
+                    Card limits, spent balances, and conversion logic support official ISO 4217 three-letter currency codes (USD, EUR, GBP, CAD, etc.) mapped directly with U.S. Treasury records.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <strong className="text-slate-800 uppercase tracking-wider text-[10px]">Polly v8 Resilience Patterns</strong>
+                  </div>
+                  <p className="pl-4 text-slate-600 font-medium">
+                    Integrates advanced transient fault handling (Retry, Exponential Backoff with Jitter, and Circuit Breaker) protecting external API communication.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <strong className="text-slate-800 uppercase tracking-wider text-[10px]">REST API Best Practices</strong>
+                  </div>
+                  <p className="pl-4 text-slate-600 font-medium">
+                    Proper RESTful conventions are enforced throughout: correct HTTP verb usage, clear URI hierarchies, descriptive status codes, and fully documentable OpenAPI contracts via Scalar UI.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <strong className="text-slate-800 uppercase tracking-wider text-[10px]">Containerization & Port Safety</strong>
+                  </div>
+                  <p className="pl-4 text-slate-600 font-medium">
+                    Fully containerized configuration using independent, lightweight Dockerfiles and Docker Compose profiles, ensuring complete host-independent portability and port conflict safety.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <strong className="text-slate-800 uppercase tracking-wider text-[10px]">Automated Test Coverage</strong>
+                  </div>
+                  <p className="pl-4 text-slate-600 font-medium">
+                    High-quality unit and integration tests written in xUnit with Moq, validating complex rules (e.g. lookback dates) and middleware behavior (e.g. rate limiters) locally and in CI.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

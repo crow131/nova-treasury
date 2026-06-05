@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 using backend_api.Data;
 using backend_api.Domain;
 using backend_api.DTOs;
@@ -13,6 +14,7 @@ namespace backend_api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableRateLimiting("StrictPolicy")]
     public class TransactionsController : ControllerBase
     {
         private readonly TreasuryDbContext _context;
@@ -30,11 +32,13 @@ namespace backend_api.Controllers
             [FromQuery] Guid? cardId, 
             [FromQuery] string currency = "USD")
         {
-            var query = _context.Transactions.AsQueryable();
+            var query = _context.Transactions.AsNoTracking().AsQueryable();
 
             if (cardId.HasValue)
             {
-                var card = await _context.Cards.FindAsync(cardId.Value);
+                var card = await _context.Cards
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.Id == cardId.Value);
                 if (card == null)
                 {
                     return NotFound(new ProblemDetails
