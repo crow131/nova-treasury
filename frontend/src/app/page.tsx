@@ -47,7 +47,7 @@ export default function Home() {
 
   useEffect(() => {
     if (toast) {
-      const timer = setTimeout(() => setToast(null), 4000);
+      const timer = setTimeout(() => setToast(null), 8000);
       return () => clearTimeout(timer);
     }
   }, [toast]);
