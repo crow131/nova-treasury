@@ -10,7 +10,8 @@ import {
   Plus, 
   HelpCircle, 
   LogOut,
-  BookOpen
+  BookOpen,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -83,6 +84,17 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenIssueModal }: S
             <BookOpen className="w-5 h-5 text-on-primary-container opacity-85" />
             <span>API Reference</span>
           </a>
+          <button 
+            onClick={() => setActiveTab('specs')} 
+            className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              activeTab === 'specs'
+                ? 'bg-secondary-container text-on-secondary-container font-semibold shadow-md'
+                : 'text-on-primary-container hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <ShieldCheck className="w-5 h-5 text-on-primary-container opacity-85" />
+            <span>Design Document</span>
+          </button>
           <button 
             onClick={() => alert('Support portal is open. If you have any inquiries, please contact corporate-support@novatreasury.com')} 
             className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-on-primary-container hover:text-white hover:bg-white/5 transition-colors cursor-pointer"

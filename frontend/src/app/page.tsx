@@ -8,6 +8,7 @@ import CardsView from '../components/CardsView';
 import TransactionsView from '../components/TransactionsView';
 import TreasuryView from '../components/TreasuryView';
 import SettingsView from '../components/SettingsView';
+import SpecsView from '../components/SpecsView';
 import { IssueCardModal, RecordTransactionModal } from '../components/Modals';
 import { Card, Transaction } from '../types';
 
@@ -199,6 +200,10 @@ export default function Home() {
             lookbackDays={lookbackDays} 
             onUpdateLookbackDays={handleUpdateLookbackDays}
           />
+        );
+      case 'specs':
+        return (
+          <SpecsView />
         );
       default:
         return (

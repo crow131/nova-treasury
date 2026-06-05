@@ -21,6 +21,8 @@ export default function Header({ activeTab }: HeaderProps) {
         return 'Search converted API insights...';
       case 'settings':
         return 'Search institutional systems...';
+      case 'specs':
+        return 'Search system parameters...';
       default:
         return 'Search corporate profiles...';
     }
