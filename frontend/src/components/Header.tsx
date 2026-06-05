@@ -8,26 +8,6 @@ interface HeaderProps {
 }
 
 export default function Header({ activeTab }: HeaderProps) {
-  // Determine search placeholder based on the active tab context
-  const getPlaceholder = () => {
-    switch (activeTab) {
-      case 'overview':
-        return 'Search transactions, entities, or cards...';
-      case 'cards':
-        return 'Search cards, transactions, or holders...';
-      case 'transactions':
-        return 'Search manual ledger ledger records...';
-      case 'treasury':
-        return 'Search converted API insights...';
-      case 'settings':
-        return 'Search institutional systems...';
-      case 'specs':
-        return 'Search system parameters...';
-      default:
-        return 'Search corporate profiles...';
-    }
-  };
-
   const getProfileName = () => {
     if (activeTab === 'settings') return 'Alexander Sterling';
     return 'Alex Chen';
@@ -52,8 +32,9 @@ export default function Header({ activeTab }: HeaderProps) {
           </span>
           <input
             type="text"
-            placeholder={getPlaceholder()}
-            className="w-full bg-surface-container-low border border-outline-variant/50 rounded-full py-2 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all outline-none font-medium placeholder:text-on-surface-variant/60"
+            placeholder="Search (Coming Soon)..."
+            disabled
+            className="w-full bg-surface-container-low border border-outline-variant/50 rounded-full py-2 pl-11 pr-4 text-sm outline-none font-medium placeholder:text-on-surface-variant/40 disabled:opacity-80 disabled:cursor-not-allowed"
           />
         </div>
       </div>

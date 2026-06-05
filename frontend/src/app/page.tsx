@@ -11,6 +11,7 @@ import SettingsView from '../components/SettingsView';
 import SpecsView from '../components/SpecsView';
 import { IssueCardModal, RecordTransactionModal } from '../components/Modals';
 import { Card, Transaction } from '../types';
+import { Sparkles } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -22,6 +23,34 @@ export default function Home() {
   // Modal open controllers
   const [issueCardModalOpen, setIssueCardModalOpen] = useState<boolean>(false);
   const [recordTransactionModalOpen, setRecordTransactionModalOpen] = useState<boolean>(false);
+
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.alert = (message: string) => {
+        const isImplemented = 
+          message.startsWith("Success:") || 
+          message.startsWith("Declined:") || 
+          message.startsWith("Failed") || 
+          message.startsWith("Network") || 
+          message.startsWith("Error");
+
+        if (isImplemented) {
+          setToast(message);
+        } else {
+          setToast(`⏳ Feature Sandbox (Coming Soon)\n${message}`);
+        }
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005';
 
@@ -251,6 +280,18 @@ export default function Home() {
         cards={cards} 
         onRecordTransaction={handleRecordTransaction}
       />
+
+      {/* Custom Global Toast System */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 bg-slate-900 border border-slate-700/80 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-fade-in max-w-sm transition-all duration-300 transform translate-y-0 opacity-100">
+          <div className="p-1 bg-white/10 rounded-lg shrink-0">
+            <Sparkles className="w-4 h-4 text-tertiary-fixed-dim animate-pulse" />
+          </div>
+          <p className="text-xs font-semibold whitespace-pre-line leading-relaxed text-slate-200">
+            {toast}
+          </p>
+        </div>
+      )}
 
     </div>
   );
