@@ -68,8 +68,26 @@ graph TD
 
 ---
 
-### Option A: Fully Containerized (Recommended for Reviewers)
-To boot the entire stack (Database, C# API, and Next.js Frontend) in isolated containers:
+### Option A: Using the Startup Script (Recommended)
+
+To automatically build, boot, wait for the Next.js frontend to be ready, and open the application in your default browser, run the provided startup script:
+
+#### 🍎 macOS & 🐧 Linux
+Run the script directly from your terminal:
+```bash
+./start.sh
+```
+
+#### 🪟 Windows
+Since standard Command Prompt (`cmd.exe`) and PowerShell do not natively support shell scripts, run the script within a Unix-compatible emulator (such as **Git Bash** or a **WSL terminal**):
+```bash
+./start.sh
+```
+
+---
+
+### Option B: Manual Containerization (Docker Compose)
+To manually boot the entire stack (Database, C# API, and Next.js Frontend) in isolated containers:
 
 1. **Clone the repository**:
    ```bash
@@ -83,7 +101,7 @@ To boot the entire stack (Database, C# API, and Next.js Frontend) in isolated co
    ```bash
    docker compose up --build
    ```
-2. **Access the applications**:
+4. **Access the applications**:
    * **Next.js Frontend**: [http://localhost:3000](http://localhost:3000)
    * **C# Backend API**: [http://localhost:5005](http://localhost:5005)
    * **Scalar OpenAPI Docs**: [http://localhost:5005/scalar/v1](http://localhost:5005/scalar/v1)
