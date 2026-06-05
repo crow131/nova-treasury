@@ -14,6 +14,10 @@ using Polly.Retry;
 using backend_api.Data;
 using backend_api.Services;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Text.Json;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,10 @@ builder.Services.AddDbContext<TreasuryDbContext>(options =>
 
 // Add Memory Cache
 builder.Services.AddMemoryCache();
+
+// Register Health Checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<TreasuryDbContext>("database");
 
 // Register Resilient Treasury API Client
 builder.Services.AddHttpClient<ITreasuryService, TreasuryService>(client =>
@@ -142,6 +150,28 @@ app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            duration = report.TotalDuration.TotalMilliseconds + "ms",
+            checks = report.Entries.Select(entry => new
+            {
+                key = entry.Key,
+                status = entry.Value.Status.ToString(),
+                description = entry.Value.Description,
+                duration = entry.Value.Duration.TotalMilliseconds + "ms",
+                error = entry.Value.Exception?.Message
+            })
+        };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));
+    }
+});
 
 app.MapControllers();
 
