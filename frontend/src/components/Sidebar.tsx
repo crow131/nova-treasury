@@ -9,7 +9,8 @@ import {
   Settings2, 
   Plus, 
   HelpCircle, 
-  LogOut 
+  LogOut,
+  BookOpen
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,6 +20,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, setActiveTab, onOpenIssueModal }: SidebarProps) {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005';
   const menuItems = [
     { id: 'overview', name: 'Overview', icon: LayoutDashboard },
     { id: 'cards', name: 'Cards', icon: CreditCard },
@@ -72,6 +74,15 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenIssueModal }: S
         </button>
 
         <div className="space-y-1">
+          <a 
+            href={`${apiBaseUrl}/scalar/v1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-on-primary-container hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            <BookOpen className="w-5 h-5 text-on-primary-container opacity-85" />
+            <span>API Reference</span>
+          </a>
           <button 
             onClick={() => alert('Support portal is open. If you have any inquiries, please contact corporate-support@novatreasury.com')} 
             className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-on-primary-container hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
