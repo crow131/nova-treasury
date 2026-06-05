@@ -69,7 +69,15 @@ graph TD
 ### Option A: Fully Containerized (Recommended for Reviewers)
 To boot the entire stack (Database, C# API, and Next.js Frontend) in isolated containers:
 
-1. **Build and start the containers**:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/crow131/nova-treasury.git
+   ```
+2. **Navigate to the project directory**:
+   ```bash
+   cd nova-treasury
+   ```
+3. **Build and start the containers**:
    ```bash
    docker compose up --build
    ```
