@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Flame,
   Activity,
-  Workflow
+  Workflow,
+  Folders
 } from 'lucide-react';
 
 export default function SpecsView() {
@@ -113,6 +114,38 @@ export default function SpecsView() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Section: Architectural Decisions */}
+          <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-xs space-y-4">
+            <h3 className="font-extrabold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+              <Folders className="w-5 h-5 text-sky-650" />
+              <span>Architectural Decisions & Simplicity</span>
+            </h3>
+            
+            <div className="space-y-3.5 text-xs leading-relaxed text-slate-650">
+              <p>
+                To align with the scope of a fast-iterating and lightweight codebase, we chose a <strong className="text-slate-800">simplified, folder-based structure</strong> rather than over-engineering the backend with multiple project assemblies (e.g. separate Domain, Application, and Infrastructure class libraries).
+              </p>
+              
+              <div className="bg-slate-50 border border-outline rounded-xl p-4 space-y-2.5">
+                <p className="font-extrabold text-slate-900 uppercase tracking-wider text-[10px]">Folder-Based API Organization</p>
+                <p>
+                  Instead of creating multiple sub-projects in the C# solution, all concerns are organized within directories inside the single <strong className="text-slate-800">backend-api</strong> project. This keeps compilation and restore cycles instantaneous while retaining logical separation:
+                </p>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 list-disc list-inside font-medium text-[11px] text-slate-600 pl-1 font-sans">
+                  <li><strong className="text-slate-750">Controllers:</strong> API endpoints & validation checks.</li>
+                  <li><strong className="text-slate-750">Services:</strong> External Treasury client & Polly pipeline.</li>
+                  <li><strong className="text-slate-750">Data:</strong> EF Core DbContext & initial DB seeds.</li>
+                  <li><strong className="text-slate-750">Domain:</strong> Core database models (Card, Transaction).</li>
+                  <li><strong className="text-slate-750">DTOs:</strong> Request & response contract structures.</li>
+                </ul>
+              </div>
+
+              <p>
+                On the Next.js frontend, we maintained a flat and clean component structure, avoiding nested routing trees in favor of a cohesive, single-page reactive workspace dashboard.
+              </p>
             </div>
           </div>
 
