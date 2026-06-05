@@ -15,6 +15,17 @@ import {
   Skull
 } from 'lucide-react';
 
+const DeadpoolIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" fill="#dc2626" stroke="#000000" strokeWidth="1.5" />
+    <line x1="12" y1="2" x2="12" y2="22" stroke="#000000" strokeWidth="1.5" />
+    <path d="M12 5 C9.5 5 7.5 7.5 7.5 12 C7.5 16.5 9.5 19 12 19 Z" fill="#0f172a" />
+    <path d="M12 5 C14.5 5 16.5 7.5 16.5 12 C16.5 16.5 14.5 19 12 19 Z" fill="#0f172a" />
+    <path d="M10.8 11.2 L9 12.2 C9.2 12.5 9.8 12.5 10.2 12.2 Z" fill="#ffffff" />
+    <path d="M13.2 11.2 L15 12.2 C14.8 12.5 14.2 12.5 13.8 12.2 Z" fill="#ffffff" />
+  </svg>
+);
+
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -104,7 +115,7 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenIssueModal }: S
                 : 'text-on-primary-container hover:text-white hover:bg-white/5'
             }`}
           >
-            <Skull className="w-5 h-5 text-on-primary-container opacity-85" />
+            <DeadpoolIcon className="w-5 h-5 shrink-0" />
             <span>Chimichanga Scanner</span>
           </button>
           <button 
