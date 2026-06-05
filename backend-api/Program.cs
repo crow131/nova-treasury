@@ -198,36 +198,43 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapHealthChecks("/health/live", new HealthCheckOptions
-{
-    Predicate = _ => false
-});
+app.MapGet("/health/live", () => Results.Ok(new { status = "Healthy" }))
+.WithName("GetLiveness")
+.WithTags("Health Checks")
+.WithSummary("Liveness Probe")
+.WithDescription("Verifies if the application container and runtime process are active.");
 
-var readyHealthCheckOptions = new HealthCheckOptions
+async Task<IResult> ReadyHandler(HealthCheckService healthCheckService)
 {
-    Predicate = check => check.Tags.Contains("ready"),
-    ResponseWriter = async (context, report) =>
+    var report = await healthCheckService.CheckHealthAsync(check => check.Tags.Contains("ready"));
+    var statusCode = report.Status == HealthStatus.Healthy ? StatusCodes.Status200OK : StatusCodes.Status503ServiceUnavailable;
+    var response = new
     {
-        context.Response.ContentType = "application/json";
-        var response = new
+        status = report.Status.ToString(),
+        duration = report.TotalDuration.TotalMilliseconds + "ms",
+        checks = report.Entries.Select(entry => new
         {
-            status = report.Status.ToString(),
-            duration = report.TotalDuration.TotalMilliseconds + "ms",
-            checks = report.Entries.Select(entry => new
-            {
-                key = entry.Key,
-                status = entry.Value.Status.ToString(),
-                description = entry.Value.Description,
-                duration = entry.Value.Duration.TotalMilliseconds + "ms",
-                error = entry.Value.Exception?.Message
-            })
-        };
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));
-    }
-};
+            key = entry.Key,
+            status = entry.Value.Status.ToString(),
+            description = entry.Value.Description,
+            duration = entry.Value.Duration.TotalMilliseconds + "ms",
+            error = entry.Value.Exception?.Message
+        })
+    };
+    return Results.Json(response, statusCode: statusCode, contentType: "application/json");
+}
 
-app.MapHealthChecks("/health/ready", readyHealthCheckOptions);
-app.MapHealthChecks("/health", readyHealthCheckOptions);
+app.MapGet("/health/ready", ReadyHandler)
+.WithName("GetReadiness")
+.WithTags("Health Checks")
+.WithSummary("Readiness Probe")
+.WithDescription("Checks the connectivity and migration status of the PostgreSQL database.");
+
+app.MapGet("/health", ReadyHandler)
+.WithName("GetHealth")
+.WithTags("Health Checks")
+.WithSummary("Health Status (Alias)")
+.WithDescription("Alias for the readiness probe checking database connection status.");
 
 app.MapControllers();
 
