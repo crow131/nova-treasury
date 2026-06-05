@@ -392,51 +392,7 @@ export default function OsintView() {
             </div>
           </div>
 
-          {/* Social Engineering Vulnerability Assessment */}
-          <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Lock className="w-4 h-4 text-amber-500" />
-              <span>Developer Vulnerability Assessment</span>
-            </h3>
 
-            <div className="space-y-3">
-              <div className="p-3 bg-red-50 border border-red-200/50 rounded-lg flex items-start gap-3">
-                <div className="p-1 bg-red-100 rounded text-red-700 shrink-0">
-                  <ShieldAlert className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-red-950">CRITICAL: Arbitrary Repo Execution (CVE-MOM-01)</h4>
-                  <p className="text-[10px] text-red-900 leading-normal mt-0.5">
-                    User ran a clone from an unverified GitHub repository with active server ports and local access capabilities. Execution contains complete file-system manipulation permission vectors.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 bg-amber-50 border border-amber-200/50 rounded-lg flex items-start gap-3">
-                <div className="p-1 bg-amber-100 rounded text-amber-700 shrink-0">
-                  <Eye className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-amber-950">WARNING: High Influence Factor (UI/UX)</h4>
-                  <p className="text-[10px] text-amber-900 leading-normal mt-0.5">
-                    Subject displays extreme compliance when presented with aesthetic dark-mode dashboards, interactive wallets, and space travel themes.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 bg-emerald-50 border border-emerald-200/50 rounded-lg flex items-start gap-3">
-                <div className="p-1 bg-emerald-100 rounded text-emerald-700 shrink-0">
-                  <Activity className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-emerald-950">INFO: Local System Intact</h4>
-                  <p className="text-[10px] text-emerald-900 leading-normal mt-0.5">
-                    No actual payload was delivered. This audit page was generated harmlessly by Antigravity AI to remind developers to practice safe cloning.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
 
         </section>
 
