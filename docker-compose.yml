@@ -24,7 +24,7 @@ services:
     container_name: treasury-backend-api
     restart: unless-stopped
     ports:
-      - "5000:8080"
+      - "5005:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=nova_treasury;Username=postgres;Password=postgres;Include Error Detail=true
@@ -41,7 +41,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      - NEXT_PUBLIC_API_URL=http://localhost:5005
     depends_on:
       - backend-api
 

@@ -39,7 +39,7 @@ export default function TreasuryView({ cards }: TreasuryViewProps) {
   const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005';
 
   const selectedCard = useMemo(() => {
     return cards.find(c => c.id === selectedCardId) || cards[0];

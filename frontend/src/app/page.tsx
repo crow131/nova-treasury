@@ -22,7 +22,7 @@ export default function Home() {
   const [issueCardModalOpen, setIssueCardModalOpen] = useState<boolean>(false);
   const [recordTransactionModalOpen, setRecordTransactionModalOpen] = useState<boolean>(false);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005';
 
   // Fetch initial data
   const fetchData = async () => {
