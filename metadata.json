@@ -1,0 +1,6 @@
+{
+  "name": "Nova Treasury",
+  "description": "Enterprise Treasury Management Platform with API Insights",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
