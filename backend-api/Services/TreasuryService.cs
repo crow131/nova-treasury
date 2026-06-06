@@ -19,7 +19,7 @@ namespace backend_api.Services
 
         private static readonly Dictionary<string, string> IsoToTreasuryName = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "EUR", "Germany-Euro" },
+            { "EUR", "Euro Zone-Euro" },
             { "GBP", "United Kingdom-Pound" },
             { "JPY", "Japan-Yen" },
             { "CAD", "Canada-Dollar" },
@@ -120,8 +120,8 @@ namespace backend_api.Services
                 return cachedRate;
             }
 
-            // To get the latest rate, fetch records from the last 12 months to guarantee we get a quarterly published rate
-            var startDate = DateTime.UtcNow.AddMonths(-12).ToString("yyyy-MM-dd");
+            // To get the latest rate, fetch records from the last 24 months to guarantee we get a quarterly published rate
+            var startDate = DateTime.UtcNow.AddMonths(-24).ToString("yyyy-MM-dd");
 
             var url = $"v1/accounting/od/rates_of_exchange?filter=record_date:gte:{startDate},country_currency_desc:eq:{treasuryDesc}";
 

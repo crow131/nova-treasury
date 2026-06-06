@@ -69,9 +69,9 @@ namespace backend_api.Tests
             {
                 Data = new System.Collections.Generic.List<TreasuryRateRow>
                 {
-                    new() { RecordDate = "2023-03-31", CountryCurrencyDesc = "Germany-Euro", ExchangeRate = "0.92" },
-                    new() { RecordDate = "2023-06-30", CountryCurrencyDesc = "Germany-Euro", ExchangeRate = "0.91" },
-                    new() { RecordDate = "2023-09-30", CountryCurrencyDesc = "Germany-Euro", ExchangeRate = "0.90" }
+                    new() { RecordDate = "2023-03-31", CountryCurrencyDesc = "Euro Zone-Euro", ExchangeRate = "0.92" },
+                    new() { RecordDate = "2023-06-30", CountryCurrencyDesc = "Euro Zone-Euro", ExchangeRate = "0.91" },
+                    new() { RecordDate = "2023-09-30", CountryCurrencyDesc = "Euro Zone-Euro", ExchangeRate = "0.90" }
                 }
             };
             var json = JsonSerializer.Serialize(mockData);
@@ -115,8 +115,8 @@ namespace backend_api.Tests
             {
                 Data = new System.Collections.Generic.List<TreasuryRateRow>
                 {
-                    new() { RecordDate = "2024-03-31", CountryCurrencyDesc = "Germany-Euro", ExchangeRate = "0.92" },
-                    new() { RecordDate = "2024-06-30", CountryCurrencyDesc = "Germany-Euro", ExchangeRate = "0.94" }
+                    new() { RecordDate = "2024-03-31", CountryCurrencyDesc = "Euro Zone-Euro", ExchangeRate = "0.92" },
+                    new() { RecordDate = "2024-06-30", CountryCurrencyDesc = "Euro Zone-Euro", ExchangeRate = "0.94" }
                 }
             };
             var json = JsonSerializer.Serialize(mockData);
